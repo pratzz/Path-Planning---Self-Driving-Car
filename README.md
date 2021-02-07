@@ -101,45 +101,25 @@ using the following settings:
 * indent using spaces
 * set tab width to 2 spaces (keeps the matrices in source code aligned)
 
-## Code Style
+## Prediction [line 17 to line 37](./src/main.cpp#L17)
+ This part of the code deals with taking into consideration the surrounding to avoid any collisions. We try to check following things:
+ - Is there a car ahead of us within 30m hat is causing us to slow down?
+ - In case we need to make a change to the left lane, is there a car on the left within 30m ahead of the ego vehicle or 151m behind the ego vehicle which could result into collision if we change?
+ - In case we need to make a change to the right lane, is there a car on the right within 30m ahead of the ego vehicle or 151m behind the ego vehicle which could result into collision if we change?
+ 
+ We try to predict the position and speed of the car and it's future position based on data receieved by sensor fusion.
+ 
+## Behaviour planning [line 128 to line 147](./src/main.cpp#L128)
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+This part decides the behaviour of the ego vehicle.It answers below questions:
+- If there is a car ahead of us causing us to slow down, what should we do? 
+- Do we change lanes?
+- Do we keep lane? 
+- Should we slow down? 
+- Should we speed up?
 
-## Project Instructions and Rubric
+Based on prediction, we take actions to decrease or increase speed and change or keep lane. To avoid jerks, we add a `ref_vel` incrementally to increase or decrease the speed.
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
+## Trajectory generation [line 176 to line 278](./src/main.cpp#L176)
 
-
-## Call for IDE Profiles Pull Requests
-
-Help your fellow students!
-
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to ensure
-that students don't feel pressured to use one IDE or another.
-
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
+In this part, we generate a trajectory for the ego vehicle based on the action decided by the planner. To make the transition smoother, we consider last 2 points from the previous path. Then we add three 30m spaced points. To avoid jerks and acceralation and make the ride smoother, we use spline library. You can also use polynomial fitting for the same.
